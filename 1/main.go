@@ -42,6 +42,34 @@ func distances(a, b []int) []int {
 	return ds
 }
 
+func makeOccurrences(a []int) map[int]int {
+	occurrences := make(map[int]int)
+	for _, x := range a {
+		val, ok := occurrences[x]
+		if !ok {
+			occurrences[x] = 1
+		} else {
+			occurrences[x] = val + 1
+		}
+	}
+	return occurrences
+}
+
+func similarity(a, b []int) int {
+	occurrences := makeOccurrences(b)
+	s := 0
+	for _, xa := range a {
+		occ, ok := occurrences[xa]
+		if !ok {
+			occ = 0
+		}
+
+		s = s + xa*occ
+	}
+
+	return s
+}
+
 func sum(a []int) int {
 	sum := 0
 	for _, x := range a {
@@ -61,9 +89,7 @@ func main() {
 	slices.Sort(columns[0])
 	slices.Sort(columns[1])
 
-	distances := distances(columns[0], columns[1])
+	sim := similarity(columns[0], columns[1])
 
-	sum := sum(distances)
-
-	log.Println(sum)
+	log.Println(sim)
 }
