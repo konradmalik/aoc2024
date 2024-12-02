@@ -26,6 +26,12 @@ func readInput(file *os.File) [][]int {
 	return rows
 }
 
+func removeAsCopy(slice []int, s int) []int {
+	ret := make([]int, 0)
+	ret = append(ret, slice[:s]...)
+	return append(ret, slice[s+1:]...)
+}
+
 func isRowSafe(row []int) int {
 
 	prevTrend := 0
@@ -70,7 +76,17 @@ func main() {
 
 	safe := 0
 	for _, row := range reports {
-		safe += isRowSafe(row)
+		if isRowSafe(row) > 0 {
+			safe++
+			continue
+		}
+
+		for i := range row {
+			if isRowSafe(removeAsCopy(row, i)) > 0 {
+				safe++
+				break
+			}
+		}
 	}
 
 	log.Println(safe)
