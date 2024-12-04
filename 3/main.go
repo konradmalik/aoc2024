@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 const InputFile string = "./input.txt"
@@ -25,23 +26,36 @@ func readInput(file *os.File) []string {
 	return lines
 }
 
-var pattern *regexp.Regexp = regexp.MustCompile(`mul\((\d+),(\d+)\)`)
+var pattern *regexp.Regexp = regexp.MustCompile(`(do\(\)|don't\(\)|mul\((\d+),(\d+)\))`)
 
-func sumOfMuls(line string) int {
+func matchToMulResult(match []string) int {
+	a, err := strconv.Atoi(match[2])
+	if err != nil {
+		log.Fatal(err)
+	}
+	b, err := strconv.Atoi(match[3])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return a * b
+}
+
+func sumOfMuls(lines []string) int {
 	sum := 0
 
-	matches := pattern.FindAllStringSubmatch(line, -1)
-	for _, match := range matches {
-		a, err := strconv.Atoi(match[1])
-		if err != nil {
-			log.Fatal(err)
+	do := true
+	for _, line := range lines {
+		matches := pattern.FindAllStringSubmatch(line, -1)
+		for _, match := range matches {
+			if strings.HasPrefix(match[1], "do(") {
+				do = true
+			} else if strings.HasPrefix(match[1], "don't") {
+				do = false
+			} else if do && strings.HasPrefix(match[1], "mul") {
+				sum += matchToMulResult(match)
+			}
 		}
-		b, err := strconv.Atoi(match[2])
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		sum += a * b
 	}
 
 	return sum
@@ -56,10 +70,7 @@ func main() {
 
 	lines := readInput(file)
 
-	sum := 0
-	for _, line := range lines {
-		sum += sumOfMuls(line)
-	}
+	sum := sumOfMuls(lines)
 
 	log.Println(sum)
 }
