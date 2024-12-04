@@ -158,6 +158,30 @@ func countXmas(words []string) int {
 	return count
 }
 
+func countMasX(lines []string) int {
+	runes := stringsToRunes(lines)
+
+	count := 0
+	for i := 1; i < len(runes)-1; i++ {
+		for j := 1; j < len(runes[i])-1; j++ {
+			if runes[i][j] == 'A' {
+				lt := runes[i-1][j-1]
+				lb := runes[i+1][j-1]
+				rb := runes[i+1][j+1]
+				rt := runes[i-1][j+1]
+				test := string([]rune{lt, rt, lb, rb})
+
+				if slices.Contains(
+					[]string{"MSMS", "MMSS", "SSMM", "SMSM"},
+					test) {
+					count++
+				}
+			}
+		}
+	}
+	return count
+}
+
 func main() {
 	file, err := os.Open(InputFile)
 	if err != nil {
@@ -167,22 +191,7 @@ func main() {
 
 	lines := readInput(file)
 
-	count := 0
-	words := iterateHorizontally(lines, false)
-	count += countXmas(words)
-	words = iterateHorizontally(lines, true)
-	count += countXmas(words)
-	words = iterateVertically(lines, false)
-	count += countXmas(words)
-	words = iterateVertically(lines, true)
-	count += countXmas(words)
-	words = iterateDiagonallyLeft(lines, false)
-	count += countXmas(words)
-	words = iterateDiagonallyLeft(lines, true)
-	count += countXmas(words)
-	words = iterateDiagonallyRight(lines, false)
-	count += countXmas(words)
-	words = iterateDiagonallyRight(lines, true)
-	count += countXmas(words)
+	count := countMasX(lines)
+
 	log.Println(count)
 }
