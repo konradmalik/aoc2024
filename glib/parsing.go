@@ -17,3 +17,16 @@ func ParseNumbers(line string) []int {
 	}
 	return numbers
 }
+
+func ParseNumbersSep(line string, sep string) []int {
+	words := strings.Split(line, sep)
+	numbers := make([]int, len(words))
+	for i, w := range words {
+		n, err := strconv.Atoi(w)
+		if err != nil {
+			panic(err)
+		}
+		numbers[i] = n
+	}
+	return numbers
+}
