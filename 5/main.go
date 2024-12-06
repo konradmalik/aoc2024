@@ -36,6 +36,34 @@ func readInput(file *os.File) ([][]int, [][]int) {
 	return rules, updates
 }
 
+func sortInPlace(rules [][]int, update []int) bool {
+	modified := false
+	for {
+		changedIteration := false
+		for _, rule := range rules {
+			a := rule[0]
+			b := rule[1]
+			idxa := slices.Index(update, a)
+			idxb := slices.Index(update, b)
+
+			if idxa == -1 || idxb == -1 {
+				continue
+			}
+
+			if idxa > idxb {
+				tmp := update[idxa]
+				update[idxa] = update[idxb]
+				update[idxb] = tmp
+				modified = true
+				changedIteration = true
+			}
+		}
+		if !changedIteration {
+			return modified
+		}
+	}
+}
+
 func checkRules(rules [][]int, update []int) bool {
 	for _, rule := range rules {
 		a := rule[0]
@@ -70,7 +98,7 @@ func main() {
 	sum := 0
 	for _, update := range updates {
 		log.Println(update)
-		if checkRules(rules, update) {
+		if sortInPlace(rules, update) {
 			mid := getMiddle(update)
 			log.Println(mid)
 			sum += mid
