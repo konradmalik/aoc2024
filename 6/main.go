@@ -48,19 +48,27 @@ func getSafely(area [][]rune, x, y int) (rune, bool) {
 	return area[x][y], true
 }
 
-func move(area [][]rune, start []int) int {
-	count := 0
+func move(area [][]rune, start []int) ([][]int, bool) {
+	positions := make([][]int, 0)
 	x := start[0]
 	y := start[1]
 	dir := 'N'
+	iterationsSinceNewField := 0
 
 	for {
+		iterationsSinceNewField++
+		// stupid loop detector but well :')
+		if iterationsSinceNewField > 1000000 {
+			return positions, true
+		}
+
 		value, ok := getSafely(area, x, y)
 		if !ok {
-			return count
+			return positions, false
 		}
 		if value != 'X' {
-			count++
+			positions = append(positions, []int{x, y})
+			iterationsSinceNewField = 0
 		}
 
 		area[x][y] = 'X'
@@ -68,47 +76,43 @@ func move(area [][]rune, start []int) int {
 		if dir == 'N' {
 			value, ok := getSafely(area, x-1, y)
 			if !ok {
-				return count
+				return positions, false
 			}
 			if value == '#' {
 				dir = 'E'
-				y++
-			} else {
-				x--
+				continue
 			}
+			x--
 		} else if dir == 'E' {
 			value, ok := getSafely(area, x, y+1)
 			if !ok {
-				return count
+				return positions, false
 			}
 			if value == '#' {
 				dir = 'S'
-				x++
-			} else {
-				y++
+				continue
 			}
+			y++
 		} else if dir == 'S' {
 			value, ok := getSafely(area, x+1, y)
 			if !ok {
-				return count
+				return positions, false
 			}
 			if value == '#' {
 				dir = 'W'
-				y--
-			} else {
-				x++
+				continue
 			}
+			x++
 		} else if dir == 'W' {
 			value, ok := getSafely(area, x, y-1)
 			if !ok {
-				return count
+				return positions, false
 			}
 			if value == '#' {
 				dir = 'N'
-				x--
-			} else {
-				y--
+				continue
 			}
+			y--
 		}
 	}
 }
@@ -126,7 +130,20 @@ func main() {
 	start := getStart(area)
 	log.Println(start)
 
-	count := move(area, start)
+	positions, loop := move(area, start)
 	printMap(area)
-	log.Println(count)
+	log.Println(len(positions))
+	log.Println(loop)
+
+	loops := 0
+	// skip start
+	for _, pos := range positions[1:] {
+		file.Seek(0, 0)
+		area := readInput(file)
+		area[pos[0]][pos[1]] = '#'
+		if _, loop := move(area, start); loop {
+			loops++
+		}
+	}
+	log.Println(loops)
 }
