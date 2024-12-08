@@ -55,6 +55,13 @@ func getSafely(area [][]rune, x, y int) (rune, bool) {
 	return area[x][y], true
 }
 
+func gcd(a, b int) int {
+	if b == 0 {
+		return a
+	}
+	return gcd(b, a%b)
+}
+
 func findAntinodes(area [][]rune, positions [][]int) [][]int {
 	nodes := make([][]int, 0)
 
@@ -62,22 +69,34 @@ func findAntinodes(area [][]rune, positions [][]int) [][]int {
 		for j := i + 1; j < len(positions); j++ {
 			pos := positions[i]
 			ppos := positions[j]
-			xm := float64(ppos[0]+pos[0]) / 2
-			ym := float64(ppos[1]+pos[1]) / 2
 
-			dx := xm - float64(pos[0])
-			dy := ym - float64(pos[1])
+			dx := pos[0] - ppos[0]
+			dy := pos[1] - ppos[1]
+			step := gcd(dx, dy)
 
-			x1 := int(xm + 3*dx)
-			y1 := int(ym + 3*dy)
-			x2 := int(xm - 3*dx)
-			y2 := int(ym - 3*dy)
+			stepx := dx / step
+			stepy := dy / step
 
-			if _, ok := getSafely(area, x1, y1); ok {
-				nodes = append(nodes, []int{x1, y1})
+			x := pos[0]
+			y := pos[1]
+			for {
+				if _, ok := getSafely(area, x, y); !ok {
+					break
+				}
+				nodes = append(nodes, []int{x, y})
+				x = x - stepx
+				y = y - stepy
 			}
-			if _, ok := getSafely(area, x2, y2); ok {
-				nodes = append(nodes, []int{x2, y2})
+
+			x = pos[0]
+			y = pos[1]
+			for {
+				if _, ok := getSafely(area, x, y); !ok {
+					break
+				}
+				nodes = append(nodes, []int{x, y})
+				x = x + stepx
+				y = y + stepy
 			}
 		}
 	}
