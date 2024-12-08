@@ -2,10 +2,13 @@ package main
 
 import (
 	"bufio"
-	"github.com/konradmalik/aoc2024/lib"
+	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
+
+	"github.com/konradmalik/aoc2024/lib"
 )
 
 const InputFile string = "./input.txt"
@@ -28,12 +31,20 @@ func readInput(file *os.File) [][]int {
 	return rows
 }
 
+func concat(a, b int) int {
+	v, err := strconv.Atoi(fmt.Sprintf("%d%d", a, b))
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 func matchOps(expected int, nums []int, acc int) bool {
 	if len(nums) == 0 {
 		return expected == acc
 	}
 
-	return matchOps(expected, nums[1:], acc+nums[0]) || matchOps(expected, nums[1:], acc*nums[0])
+	return matchOps(expected, nums[1:], acc+nums[0]) || matchOps(expected, nums[1:], acc*nums[0]) || matchOps(expected, nums[1:], concat(acc, nums[0]))
 }
 
 func main() {
