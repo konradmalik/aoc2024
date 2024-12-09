@@ -12,6 +12,11 @@ import (
 const InputFile string = "./input.txt"
 const Empty int = -1
 
+type blob struct {
+	Id   int
+	Size int
+}
+
 func readInput(file *os.File) []int {
 	rows := make([]int, 0)
 
@@ -28,49 +33,69 @@ func readInput(file *os.File) []int {
 	return rows
 }
 
-func unwrap(pattern []int) []int {
-	layout := make([]int, 0)
+func unwrap(pattern []int) []blob {
+	layout := make([]blob, 0)
 
 	id := 0
 	for i, n := range pattern {
 		if i%2 == 0 {
-			layout = append(layout, slices.Repeat([]int{id}, n)...)
+			layout = append(layout, slices.Repeat([]blob{{id, n}}, n)...)
 			id++
 		} else {
-			layout = append(layout, slices.Repeat([]int{Empty}, n)...)
+			layout = append(layout, slices.Repeat([]blob{{Empty, n}}, n)...)
 		}
 	}
 	return layout
 }
 
-func compact(layout []int) {
+func compact(layout []blob) {
 	i := 0
 	j := len(layout) - 1
-	for i < j {
-		for layout[i] != Empty {
-			i++
+	for j > 0 {
+		if i >= j {
+			i = 0
+			j--
+			continue
 		}
 
-		for layout[j] == Empty {
+		space := layout[i]
+		blob := layout[j]
+
+		if blob.Id == Empty {
+			j--
+			continue
+		}
+
+		if space.Id != Empty || blob.Size > space.Size {
+			i++
+			continue
+		}
+
+		// shrink empty space
+		for x := 0; x < space.Size; x++ {
+			layout[i+x].Size = space.Size - blob.Size
+		}
+
+		// swap
+		for x := 0; x < blob.Size; x++ {
+			tmp := layout[i]
+			layout[i] = layout[j]
+			layout[j] = tmp
+			i++
 			j--
 		}
-
-		layout[i] = layout[j]
-		layout[j] = Empty
-		i++
-		j--
+		// reset left hand for the next blob
+		i = 0
 	}
 }
 
-func checksum(layout []int) int {
+func checksum(layout []blob) int {
 	sum := 0
-	i := 0
-	for _, n := range layout {
-		if n == Empty {
+	for i, b := range layout {
+		if b.Id == Empty {
 			continue
 		}
-		sum += i * n
-		i++
+		sum += i * b.Id
 	}
 	return sum
 }
