@@ -42,12 +42,7 @@ func getSafely(area [][]int, x, y int) (int, bool) {
 	return area[x][y], true
 }
 
-type point struct {
-	X int
-	Y int
-}
-
-func tailheadScore(area [][]int, x, y, prev int, found map[point]bool) int {
+func tailheadScore(area [][]int, x, y, prev int) int {
 	curr, ok := getSafely(area, x, y)
 	if !ok {
 		return 0
@@ -58,17 +53,13 @@ func tailheadScore(area [][]int, x, y, prev int, found map[point]bool) int {
 	}
 
 	if curr == 9 {
-		if _, ok := found[point{x, y}]; ok {
-			return 0
-		}
-		found[point{x, y}] = true
 		return 1
 	}
 
-	return tailheadScore(area, x-1, y, curr, found) +
-		tailheadScore(area, x+1, y, curr, found) +
-		tailheadScore(area, x, y-1, curr, found) +
-		tailheadScore(area, x, y+1, curr, found)
+	return tailheadScore(area, x-1, y, curr) +
+		tailheadScore(area, x+1, y, curr) +
+		tailheadScore(area, x, y-1, curr) +
+		tailheadScore(area, x, y+1, curr)
 }
 
 func scoreTrails(area [][]int) int {
@@ -76,7 +67,7 @@ func scoreTrails(area [][]int) int {
 	for x, row := range area {
 		for y, p := range row {
 			if p == 0 {
-				sum += tailheadScore(area, x, y, -1, make(map[point]bool))
+				sum += tailheadScore(area, x, y, -1)
 			}
 		}
 	}
