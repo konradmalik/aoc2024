@@ -28,16 +28,29 @@ func readInput(file *os.File) []int {
 	return area
 }
 
-func blinkAtStone(stone, blinksLeft int) int {
+type stone struct {
+	value      int
+	blinksLeft int
+}
+
+var memo map[stone]int = make(map[stone]int)
+
+func blinkAtStone(value, blinksLeft int) int {
+	if cached, ok := memo[stone{value, blinksLeft}]; ok {
+		return cached
+	}
+
 	if blinksLeft == 0 {
 		return 1
 	}
 
-	if stone == 0 {
-		return blinkAtStone(1, blinksLeft-1)
+	if value == 0 {
+		ret := blinkAtStone(1, blinksLeft-1)
+		memo[stone{1, blinksLeft - 1}] = ret
+		return ret
 	}
 
-	str := strconv.Itoa(stone)
+	str := strconv.Itoa(value)
 	if n := len(str); n%2 == 0 {
 		a, err := strconv.Atoi(str[:n/2])
 		if err != nil {
@@ -47,11 +60,16 @@ func blinkAtStone(stone, blinksLeft int) int {
 		if err != nil {
 			panic(err)
 		}
-		return blinkAtStone(a, blinksLeft-1) + blinkAtStone(b, blinksLeft-1)
+		ar := blinkAtStone(a, blinksLeft-1)
+		memo[stone{a, blinksLeft - 1}] = ar
+		br := blinkAtStone(b, blinksLeft-1)
+		memo[stone{b, blinksLeft - 1}] = br
+		return ar + br
 	}
 
-	return blinkAtStone(stone*2024, blinksLeft-1)
-
+	ret := blinkAtStone(value*2024, blinksLeft-1)
+	memo[stone{value * 2024, blinksLeft - 1}] = ret
+	return ret
 }
 
 func main() {
@@ -64,7 +82,7 @@ func main() {
 	sum := 0
 	stones := readInput(file)
 	for _, stone := range stones {
-		sum += blinkAtStone(stone, 25)
+		sum += blinkAtStone(stone, 75)
 	}
 	log.Println(sum)
 }
